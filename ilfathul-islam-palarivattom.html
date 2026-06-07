@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Madrassa Word Book - Students Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #eff6ff;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --text: #1f2937;
+            --text-light: #4b5563;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--primary), #3b82f6);
+            color: white;
+            padding: 25px 15px;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(30, 58, 138, 0.1);
+        }
+
+        header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        /* Dropdown Selection Area */
+        .selection-box {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 6px;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 16px;
+            background-color: var(--bg);
+            color: var(--text);
+            outline: none;
+            cursor: pointer;
+        }
+
+        select:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .welcome-msg {
+            text-align: center;
+            padding: 15px;
+            background-color: var(--primary-light);
+            color: var(--primary);
+            border-radius: 8px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        /* Word Cards Area */
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .word-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            border: 1px solid var(--border);
+            border-left: 5px solid var(--success);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .word-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .mal-text {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .arbi-text {
+            font-size: 22px;
+            color: #047857;
+            font-family: 'Amiri', 'Traditional Arabic', serif;
+            direction: rtl;
+            margin-top: 2px;
+        }
+
+        .play-btn {
+            background-color: var(--primary-light);
+            color: var(--primary);
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        .play-btn:hover {
+            background-color: var(--primary);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .play-btn.playing {
+            background-color: var(--success);
+            color: white;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+            100% { transform: scale(1); }
+        }
+
+        .no-data {
+            text-align: center;
+            color: var(--text-light);
+            padding: 30px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1><i class="fa-solid fa-book-open-reader"></i> എന്റെ ശബ്ദ പുസ്തകം</h1>
+        <p id="appMeta">മദ്രസയും പേരും സെലക്ട് ചെയ്ത് വാക്കുകൾ പഠിക്കാം</p>
+    </header>
+
+    <div class="selection-box">
+        <div class="form-group">
+            <label><i class="fa-solid fa-mosque"></i> മദ്രസ സെലക്ട് ചെയ്യുക:</label>
+            <select id="madrassaSelect" onchange="updateStudentsDropdown()">
+                <option value="">-- മദ്രസ തിരഞ്ഞെടുക്കുക --</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label><i class="fa-solid fa-user-graduate"></i> കുട്ടിയുടെ പേര്:</label>
+            <select id="studentSelect" onchange="showStudentWelcome()">
+                <option value="">-- പേര് തിരഞ്ഞെടുക്കുക --</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="welcome-msg" id="welcomeBox"></div>
+
+    <div id="wordsSection" style="display: none;">
+        <div class="section-title">
+            <i class="fa-solid fa-star"></i> പഠിക്കേണ്ട വാക്കുകൾ താഴെ നൽകുന്നു:
+        </div>
+        <div id="wordsContainer"></div>
+    </div>
+    
+    <div id="loadingArea" class="no-data">
+        <i class="fa-solid fa-spinner fa-spin"></i> വിവരങ്ങൾ ലോഡ് ചെയ്യുന്നു...
+    </div>
+</div>
+
+<script>
+let appData = { madrassas: [], words: [] };
+let currentAudio = null;
+let currentBtn = null;
+
+// 🌐 പേജ് ഓപ്പൺ ചെയ്യുമ്പോൾ ഗിറ്റ്‌ഹബിലെ പുതിയ data.json ഫയൽ ഓട്ടോമാറ്റിക് ആയി റീഡ് ചെയ്യുന്നു
+document.addEventListener("DOMContentLoaded", function() {
+    fetch('data.json')
+        .then(res => {
+            if(!res.ok) throw new Error("Data file missing");
+            return res.json();
+        })
+        .then(data => {
+            appData = data;
+            document.getElementById('loadingArea').style.display = 'none';
+            populateMadrassaDropdown();
+        })
+        .catch(err => {
+            document.getElementById('loadingArea').innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="color:var(--danger)"></i> ഡാറ്റ ലോഡ് ചെയ്യാൻ കഴിഞ്ഞില്ല. അഡ്മിൻ പാനൽ വഴി സിപ്പ് ഫയൽ അപ്‌ലോഡ് ചെയ്തിട്ടുണ്ടെന്ന് ഉറപ്പാക്കുക.`;
+            console.error(err);
+        });
+});
+
+// 🕌 മദ്രസകളുടെ ലിസ്റ്റ് ഡ്രോപ്പ്ഡൗണിലേക്ക് ചേർക്കുന്നു
+function populateMadrassaDropdown() {
+    let select = document.getElementById("madrassaSelect");
+    appData.madrassas.forEach((m, index) => {
+        let opt = document.createElement("option");
+        opt.value = index;
+        opt.textContent = m.name;
+        select.appendChild(opt);
+    });
+}
+
+// 👶 മദ്രസ മാറുമ്പോൾ അതിലെ കുട്ടികളുടെ ലിസ്റ്റ് മാറ്റുന്നു
+function updateStudentsDropdown() {
+    let mIndex = document.getElementById("madrassaSelect").value;
+    let sSelect = document.getElementById("studentSelect");
+    let welcomeBox = document.getElementById("welcomeBox");
+    let wordsSection = document.getElementById("wordsSection");
+    
+    sSelect.innerHTML = '<option value="">-- പേര് തിരഞ്ഞെടുക്കുക --</option>';
+    welcomeBox.style.display = 'none';
+    wordsSection.style.display = 'none';
+    
+    if(mIndex === "") return;
+    
+    let selectedMadrassa = appData.madrassas[mIndex];
+    
+    // ആ മദ്രസയുടെ ക്ലാസ്സ് വിവരങ്ങൾ ഹെഡറിൽ കാണിക്കുന്നു
+    if(selectedMadrassa.metaInfo) {
+        document.getElementById("appMeta").textContent = selectedMadrassa.metaInfo;
+    } else {
+        document.getElementById("appMeta").textContent = "മദ്രസയും പേരും സെലക്ട് ചെയ്ത് വാക്കുകൾ പഠിക്കാം";
+    }
+    
+    // കുട്ടികളെ ആഡ് ചെയ്യുന്നു
+    selectedMadrassa.students.forEach(student => {
+        let opt = document.createElement("option");
+        opt.value = student;
+        opt.textContent = student;
+        sSelect.appendChild(opt);
+    });
+}
+
+// 🎉 കുട്ടിയുടെ പേര് സെലക്ട് ചെയ്താൽ വെൽകം മെസ്സേജും വാക്കുകളും കാണിക്കുന്നു
+function showStudentWelcome() {
+    let studentName = document.getElementById("studentSelect").value;
+    let welcomeBox = document.getElementById("welcomeBox");
+    let wordsSection = document.getElementById("wordsSection");
+    
+    if(studentName === "") {
+        welcomeBox.style.display = 'none';
+        wordsSection.style.display = 'none';
+        return;
+    }
+    
+    welcomeBox.innerHTML = `<i class="fa-solid fa-hands-praying"></i> അസ്സലാമു അലൈക്കും, <b>${studentName}</b>. നമുക്ക് പഠിക്കാൻ തുടങ്ങിയാലോ?`;
+    welcomeBox.style.display = 'block';
+    
+    // വാക്കുകളുടെ ലിസ്റ്റ് റെഡിയാക്കുന്നു
+    renderWordsList();
+    wordsSection.style.display = 'block';
+}
+
+// 📝 പാഠത്തിലെ വാക്കുകൾ കാർഡുകളായി സ്ക്രീനിൽ കാണിക്കുന്ന ഫങ്ക്ഷൻ
+function renderWordsList() {
+    let container = document.getElementById("wordsContainer");
+    container.innerHTML = "";
+    
+    if(!appData.words || appData.words.length === 0) {
+        container.innerHTML = '<div class="no-data">വാക്കുകൾ ഒന്നും ചേർത്തിട്ടില്ല!</div>';
+        return;
+    }
+    
+    appData.words.forEach(w => {
+        let div = document.createElement("div");
+        div.className = "word-card";
+        div.innerHTML = `
+            <div class="word-info">
+                <div class="mal-text">${w.mal}</div>
+                <div class="arbi-text">${w.arbiText}</div>
+            </div>
+            <button class="play-btn" onclick="playWordAudio('${w.audio}', this)" title="ശബ്ദം കേൾക്കുക">
+                <i class="fa-solid fa-play"></i>
+            </button>
+        `;
+        container.appendChild(div);
+    });
+}
+
+// 🔊 ഓഡിയോ പ്ലേ ചെയ്യാനുള്ള ഫങ്ക്ഷൻ
+function playWordAudio(audioFile, btn) {
+    // നിലവിൽ പ്ലേ ആയിക്കൊണ്ടിരിക്കുന്ന ഓഡിയോ ഉണ്ടെങ്കിൽ അത് നിർത്തുക
+    if (currentAudio) {
+        currentAudio.pause();
+        if (currentBtn) {
+            currentBtn.classList.remove("playing");
+            currentBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
+        }
+        
+        // ഒരേ ബട്ടൺ തന്നെയാണ് വീണ്ടും ക്ലിക്ക് ചെയ്തതെങ്കിൽ പ്ലേ ചെയ്യുന്നത് നിർത്തുക മാത്രം ചെയ്യുക
+        if (currentBtn === btn) {
+            currentAudio = null;
+            currentBtn = null;
+            return;
+        }
+    }
+
+    // പുതിയ ഓഡിയോ പ്ലേ ചെയ്യുന്നു
+    currentAudio = new Audio(audioFile);
+    currentBtn = btn;
+    
+    btn.classList.add("playing");
+    btn.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
+    
+    currentAudio.play().catch(e => {
+        alert("ശബ്ദ ഫയൽ പ്ലേ ചെയ്യാൻ കഴിഞ്ഞില്ല!");
+        btn.classList.remove("playing");
+        btn.innerHTML = '<i class="fa-solid fa-play"></i>';
+    });
+    
+    // ഓഡിയോ തീരുമ്പോൾ ബട്ടൺ പഴയതുപോലെ ആക്കുക
+    currentAudio.onended = function() {
+        btn.classList.remove("playing");
+        btn.innerHTML = '<i class="fa-solid fa-play"></i>';
+        currentAudio = null;
+        currentBtn = null;
+    };
+}
+</script>
+</body>
+</html>
