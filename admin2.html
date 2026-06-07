@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Madrassa App Suite - Auto Folder Admin Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #eff6ff;
+            --success: #10b981;
+            --success-light: #ecfdf5;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --text: #1f2937;
+            --text-light: #4b5563;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: var(--bg); color: var(--text); padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 30px; background: linear-gradient(135deg, var(--primary), #3b82f6); color: white; padding: 30px 20px; border-radius: 16px; box-shadow: 0 10px 25px rgba(30, 58, 138, 0.15); }
+        header h1 { font-size: 28px; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 12px; }
+        .sync-status { background-color: #e0f2fe; border: 1px solid #7dd3fc; padding: 12px 20px; border-radius: 10px; margin-bottom: 25px; display: flex; align-items: center; gap: 10px; font-weight: 600; color: #0369a1; }
+        .section-header { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 700; color: var(--primary); margin: 30px 0 15px 0; padding-bottom: 8px; border-bottom: 2px solid var(--border); }
+        .card { background-color: var(--card-bg); border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); border: 1px solid var(--border); margin-bottom: 20px; overflow: hidden; position: relative; }
+        .madrassa-card { border-left: 5px solid var(--warning); background-color: #fffdf9; }
+        .word-card { border-left: 5px solid var(--success); }
+        .card-header { padding: 15px 20px; background-color: rgba(0, 0, 0, 0.02); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .madrassa-card .card-title { color: #b45309; font-weight:600; }
+        .word-card .card-title { color: #047857; font-weight:600; }
+        .card-body { padding: 20px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .form-group-full { grid-column: 1 / -1; }
+        label { font-size: 13px; font-weight: 600; color: var(--text-light); display:block; margin-bottom:5px; }
+        input[type="text"], textarea { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 15px; }
+        textarea { resize: vertical; min-height: 80px; }
+        .arabic-input { direction: rtl; font-family: 'Amiri', sans-serif; font-size: 20px !important; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 18px; font-size: 14px; font-weight: 600; border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-success { background-color: var(--success); color: white; }
+        .btn-danger-light { background-color: #fef2f2; color: var(--danger); border: 1px solid #fee2e2; }
+        .btn-outline { background-color: white; color: var(--primary); border: 1px solid var(--primary); }
+        .btn-block { width: 100%; padding: 14px; font-size: 16px; }
+        .btn-generate { background: linear-gradient(135deg, var(--warning), #f59e0b); color: #001f3f; font-size: 18px; margin-top: 25px; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3); }
+        
+        /* Audio Controls */
+        .audio-controls { display: flex; align-items: center; gap: 12px; margin-top: 10px; padding: 10px; background-color: var(--bg); border-radius: 8px; flex-wrap: wrap; }
+        .mic-btn { background-color: var(--danger); color: white; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; }
+        .mic-btn.recording { background-color: var(--success); animation: pulse 1.2s infinite; }
+        
+        .preview-btn { background-color: #3b82f6; color: white; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; border: none; cursor: pointer; display: none; }
+        .confirm-btn { background-color: #10b981; color: white; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; border: none; cursor: pointer; display: none; }
+        
+        .audio-status { font-size: 13px; font-weight: 500; }
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1><i class="fa-solid fa-sliders"></i> വേർഡ് ആപ്പ് മാസ്റ്റർ അഡ്മിൻ പാനൽ</h1>
+        <p>ശബ്ദം റെക്കോർഡ് ചെയ്ത് പ്ലേ ചെയ്തു നോക്കി ഉറപ്പിച്ചതിനു ശേഷം മാത്രം ആഡ് ചെയ്യാം.</p>
+    </header>
+
+    <div class="sync-status" id="syncStatus">
+        <i class="fa-solid fa-spinner fa-spin"></i> GitHub-ൽ നിന്ന് പഴയ 'data' ഫോൾഡർ വിവരങ്ങൾ ശേഖരിക്കുന്നു...
+    </div>
+
+    <div class="section-header">
+        <i class="fa-solid fa-mosque"></i> 1. മദ്രസകളും കുട്ടികളുടെ ലിസ്റ്റും
+    </div>
+    <div id="madrassaArea"></div>
+    <button class="btn btn-outline" onclick="addMadrassaField()">
+        <i class="fa-solid fa-plus"></i> മറ്റൊരു മദ്രസ കൂടി ചേർക്കുക
+    </button>
+
+    <div class="section-header">
+        <i class="fa-solid fa-book-open"></i> 2. പാഠത്തിലെ വാക്കുകൾ
+    </div>
+    <div id="wordsArea"></div>
+    <button class="btn btn-success" onclick="addWordRow()">
+        <i class="fa-solid fa-plus"></i> പുതിയ വാക്ക് ചേർക്കുക
+    </button>
+
+    <hr style="border:0; border-top:1px solid var(--border); margin:30px 0;">
+    
+    <button class="btn btn-primary btn-block btn-generate" onclick="generateMasterZip()">
+        <i class="fa-solid fa-box-archive"></i> 'data' ഫോൾഡർ അടങ്ങിയ പുതിയ ZIP ഡൗൺലോഡ് ചെയ്യുക
+    </button>
+</div>
+
+<script>
+let madrassaCount = 0;
+let wordCount = 0;
+let audioBlobs = {}; // ഫൈനലായി കൺഫേം ചെയ്ത പുതിയ ബ്ലോബുകൾ
+let tempAudioBlobs = {}; // താല്കാലികമായി കേട്ടുനോക്കാൻ സൂക്ഷിക്കുന്ന ബ്ലോബുകൾ
+let mediaRecorders = {};
+let importedAudioFiles = {}; 
+
+// ➔ ➔ നിങ്ങളുടെ ഒറിജിനൽ മലയാളം ➔ അറബി-മലയാളം കൺവേർഷൻ എഞ്ചിൻ ➔ ➔
+const initialVowels = {
+  "അ":"اَ","ആ":"آ","ഇ":"اِ","ഈ":"اِی","ഉ":"اُ","ഊ":"اُو",
+  "ഋ":"ِرُ","എ":"ا٘","ഏ":"ا٘ے","ഐ":"اَیْ","ഒ":"اٗ","ഓ":"اٗو","ഔ":"اَوْ"
+};
+
+const baseConsonants = {
+  "ൻ":"نْ","ൽ":"لْ","ർ":"رٛ","ൾ":"ۻۡ","ൺ":"ڹۡ","ൿ":"كۡ",
+  "ക്ക":"كّ","ഗ്ഗ":"گّ","ങ്ങ":"ۼّ","ച്ച":"چّ","ജ്ജ":"جّ","ഞ്ഞ":"ڿّ",
+  "ട്ട":"ڊّ","ണ്ണ":"ڹّ","ത്ത":"تّ","ദ്ധ":"دّ","ന്ന":"نّ","പ്പ":"پّ",
+  "ബ്ബ":"بّ","മ്മ":"مّ","യ്യ":"یّ","ല്ല":"لّ","വ്വ":"وّ","ശ്ശ":"ۺّ",
+  "സ്സ":"سّ","ള്ള":"ۻّ","റ്റ":"ڔّ",
+  "ന്ത":"نْت","ണ്ട":"ڹْڊ","ങ്ക":"نْگ","ഞ്ച":"ڿْച","മ്പ":"نْب",
+  "ന്റ":"نْڔ","സ്ഥ":"سْت","нда":"نْد","ക്ഷ":"كْش","ക്ത":"كْت","സ്ക":"سۡك",
+  "ക":"ك","ഖ":"كھ","ഗ":"گ","ഘ":"گھ","ങ":"ۼ",
+  "ച":"چ","ഛ":"چھ","ജ":"ج","ഝ":"جھ","ഞ":"ڿ",
+  "ട":"ڊ","ഠ":"ڊه","ഡ":"ڗ","ഢ":"ڗھ","ണ":"ڹ",
+  "ത":"ت","ഥ":"تھ","ദ":"د","ധ":"دھ","ന":"ن",
+  "പ":"پ","ഫ":"ف","ബ":"ب","ഭ":"بھ","മ":"م",
+  "യ":"ی","ര":"ڔ","ല":"ل","വ":"و","ശ":"ۺ","ഷ":"ش","സ":"സ","ഹ":"ه",
+  "ള":"ۻ","ഴ":"ژ","റ":"ر",
+  "ക്ര":"كْر","പ്ര":"پْر","ത്ര":"تْر","പ്ല":"پْل","സ്വ":"سْو","ത്വ":"تْو"
+};
+
+const vowelSigns = {
+  "ാ":"َا","ി":"ِ","ീ":"ِی","ു":"ُ","ൂ":"ُو",
+  "െ":"٘","േ":"ي٘","ൈ":"َیْ","ൊ":"ٗ","ോ":"ٗو","ൗ":"َوْ",
+  "ൃ":"ِرُ","്":"ۡ","ം":"مٛ","ഃ":"َهْ"
+};
+
+const chillusSpecial = { "ം":"مْ" };
+const sortedConsonants = Object.keys(baseConsonants).sort((a,b)=>b.length-a.length);
+
+function convertMalayalamToArbi(text){
+  let result="",i=0;
+  while(i<text.length){
+    let char=text[i],found=false;
+    if(initialVowels[char]){result+=initialVowels[char];i++;continue;}
+    if(chillusSpecial[char]){result+=chillusSpecial[char];i++;continue;}
+    for(let con of sortedConsonants){
+      if(text.startsWith(con,i)){
+        let ni=i+con.length,nc=text[ni];
+        if(vowelSigns[nc]){result+=baseConsonants[con]+vowelSigns[nc];i=ni+1;}
+        else{result+=baseConsonants[con]+"َ";i=ni;}
+        found=true;break;
+      }
+    }
+    if(!found){result+=char;i++;}
+  }
+  return result;
+}
+
+function handleAutoConvert(id) {
+    let malInput = document.getElementById(`mal_${id}`);
+    let arbiInput = document.getElementById(`arbi_${id}`);
+    if (malInput && arbiInput) {
+        arbiInput.value = convertMalayalamToArbi(malInput.value);
+    }
+}
+// ➔ ➔ കൺവേർഷൻ എഞ്ചിൻ ഇവിടെ അവസാനിക്കുന്നു ➔ ➔
+
+window.onload = function() {
+    fetch('data/data.json')
+        .then(res => {
+            if (!res.ok) throw new Error("No old data folder found");
+            return res.json();
+        })
+        .then(async oldData => {
+            document.getElementById('madrassaArea').innerHTML = "";
+            document.getElementById('wordsArea').innerHTML = "";
+            
+            if(oldData.madrassas && oldData.madrassas.length > 0) {
+                oldData.madrassas.forEach(m => {
+                    addMadrassaField(m.name, m.metaInfo, m.students.join(', '));
+                });
+            } else { addMadrassaField(); }
+            
+            if(oldData.words && oldData.words.length > 0) {
+                document.getElementById('syncStatus').innerHTML = `<i class="fa-solid fa-cloud-arrow-down"></i> 'data' ഫോൾഡറിലെ പഴയ ശബ്ദങ്ങൾ മെമ്മറിയിലേക്ക് മാറ്റുന്നു...`;
+                
+                for(let w of oldData.words) {
+                    addWordRow(w.mal, w.arbiText, w.audio);
+                    
+                    try {
+                        let audioRes = await fetch('data/' + w.audio);
+                        if(audioRes.ok) {
+                            let audioBlob = await audioRes.blob();
+                            importedAudioFiles[w.audio] = audioBlob;
+                        }
+                    } catch(e) {
+                        console.log("ഓഡിയോ ഫയൽ ലഭ്യമായില്ല: " + w.audio);
+                    }
+                }
+            } else { addWordRow(); }
+            
+            document.getElementById('syncStatus').innerHTML = `<i class="fa-solid fa-circle-check" style="color:#10b981;"></i> പഴയ 'data' ഫോൾഡറിലെ വിവരങ്ങൾ വിജയകരമായി സിങ്ക് ചെയ്തു!`;
+            document.getElementById('syncStatus').style.backgroundColor = "#ecfdf5";
+            document.getElementById('syncStatus').style.color = "#047857";
+            document.getElementById('syncStatus').style.borderColor = "#a7f3d0";
+        })
+        .catch(err => {
+            addMadrassaField();
+            addWordRow();
+            document.getElementById('syncStatus').innerHTML = `<i class="fa-solid fa-info-circle"></i> മുൻപ് ചെയ്ത 'data' ഫോൾഡർ ഒന്നും കണ്ടെത്തിയില്ല. പുതിയതായി ആരംഭിക്കാം.`;
+        });
+};
+
+function addMadrassaField(name = '', meta = '', students = '') {
+    madrassaCount++;
+    let id = madrassaCount;
+    let div = document.createElement('div');
+    div.className = 'card madrassa-card';
+    div.id = `madrassa_${id}`;
+    div.innerHTML = `
+        <div class="card-header">
+            <div class="card-title"><i class="fa-solid fa-place-of-worship"></i> മദ്രസ വിവരങ്ങൾ</div>
+            <button class="btn btn-danger-light" style="padding: 5px 10px; font-size: 12px;" onclick="document.getElementById('madrassa_${id}').remove()">
+                <i class="fa-solid fa-trash"></i> Remove
+            </button>
+        </div>
+        <div class="card-body">
+            <div class="form-grid">
+                <div class="form-group" style="grid-column: span 2;">
+                    <label>മദ്രസയുടെ പേര്:</label>
+                    <input type="text" class="m-name" value="${name}" placeholder="മദ്രസയുടെ പേര്">
+                </div>
+                <div class="form-group">
+                    <label>ക്ലാസ്സ് / വിഷയം:</label>
+                    <input type="text" class="m-meta" value="${meta}" placeholder="ഉദാ: ക്ലാസ്സ് 2">
+                </div>
+                <div class="form-group form-group-full">
+                    <label>കുട്ടികളുടെ പേരുകൾ (കോമയിട്ട് നൽകുക):</label>
+                    <textarea class="m-students" placeholder="ഉദാ: അൽത്താഫ്, ഫാത്തിമ">${students}</textarea>
+                </div>
+            </div>
+        </div>
+    `;
+    document.getElementById('madrassaArea').appendChild(div);
+}
+
+function addWordRow(mal = '', arbi = '', existingAudioName = '') {
+    wordCount++;
+    let id = wordCount;
+    let div = document.createElement('div');
+    div.className = 'card word-card';
+    div.id = `word_${id}`;
+    
+    let isConfirmed = existingAudioName ? "true" : "false";
+
+    div.innerHTML = `
+        <div class="card-header">
+            <div class="card-title"><i class="fa-solid fa-language"></i> വാക്ക് വിവരങ്ങൾ</div>
+            <button class="btn btn-danger-light" style="padding: 5px 10px; font-size: 12px;" onclick="document.getElementById('word_${id}').remove()">
+                <i class="fa-solid fa-trash"></i> Delete
+            </button>
+        </div>
+        <div class="card-body" data-confirmed="${isConfirmed}">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>മലയാളം വാക്ക്:</label>
+                    <input type="text" id="mal_${id}" class="w-mal" value="${mal}" placeholder="മലയാളം വാക്ക്" oninput="handleAutoConvert(${id})">
+                </div>
+                <div class="form-group">
+                    <label>അറബി മലയാളം വാക്ക്:</label>
+                    <input type="text" id="arbi_${id}" class="w-arbi arabic-input" value="${arbi}" placeholder="مَلَيٰۻَمْ">
+                </div>
+            </div>
+            <div class="audio-controls">
+                <button class="mic-btn" id="mic_${id}" onclick="toggleMic(${id})" title="റെക്കോർഡ് ചെയ്യുക">
+                    <i class="fa-solid fa-microphone"></i>
+                </button>
+                
+                <button class="preview-btn" id="preview_${id}" onclick="previewTempAudio(${id})" title="കേട്ടുനോക്കുക">
+                    <i class="fa-solid fa-play"></i> കേട്ടുനോക്കൂ
+                </button>
+                
+                <button class="confirm-btn" id="confirm_${id}" onclick="confirmAudio(${id})" title="ഉറപ്പിക്കുക">
+                    <i class="fa-solid fa-check"></i> OK ആണ്
+                </button>
+
+                <span class="audio-status" id="status_${id}" style="color:${existingAudioName ? '#10b981' : '#4b5563'};" data-audio="${existingAudioName}">
+                    ${existingAudioName ? '<i class="fa-solid fa-circle-check"></i> പഴയ ശബ്ദം സുരക്ഷിതമാണ്' : '<i class="fa-solid fa-circle-xmark"></i> ശബ്ദം റെക്കോർഡ് ചെയ്തിട്ടില്ല'}
+                </span>
+            </div>
+        </div>
+    `;
+    document.getElementById('wordsArea').appendChild(div);
+}
+
+function toggleMic(id) {
+    let btn = document.getElementById(`mic_${id}`);
+    let status = document.getElementById(`status_${id}`);
+    let prevBtn = document.getElementById(`preview_${id}`);
+    let confBtn = document.getElementById(`confirm_${id}`);
+    let cardBody = document.querySelector(`#word_${id} .card-body`);
+    
+    if (mediaRecorders[id] && mediaRecorders[id].state === "recording") {
+        mediaRecorders[id].stop();
+        btn.classList.remove('recording');
+        btn.innerHTML = '<i class="fa-solid fa-microphone"></i>';
+    } else {
+        navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+            let mediaRecorder = new MediaRecorder(stream);
+            mediaRecorders[id] = mediaRecorder;
+            let chunks = [];
+            mediaRecorder.ondataavailable = e => chunks.push(e.data);
+            mediaRecorder.onstop = () => {
+                tempAudioBlobs[id] = new Blob(chunks, { type: 'audio/mp3' });
+                status.innerHTML = '⚠️ ശബ്ദം സേവ് ചെയ്തിട്ടില്ല! കേട്ടുനോക്കി കൺഫേം ചെയ്യുക.';
+                status.style.color = "#f59e0b";
+                
+                prevBtn.style.display = "inline-flex";
+                confBtn.style.display = "inline-flex";
+                cardBody.setAttribute('data-confirmed', 'false');
+            };
+            mediaRecorder.start();
+            btn.classList.add('recording');
+            btn.innerHTML = '<i class="fa-solid fa-stop"></i>';
+            status.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> റെക്കോർഡിങ്...';
+            status.style.color = "#ef4444";
+            
+            prevBtn.style.display = "none";
+            confBtn.style.display = "none";
+        }).catch(e => alert("മൈക്ക് പെർമിഷൻ തരണം!"));
+    }
+}
+
+function previewTempAudio(id) {
+    if (tempAudioBlobs[id]) {
+        let url = URL.createObjectURL(tempAudioBlobs[id]);
+        let audio = new Audio(url);
+        audio.play().catch(e => alert("പ്ലേ ചെയ്യാൻ കഴിഞ്ഞില്ല!"));
+    }
+}
+
+function confirmAudio(id) {
+    if (tempAudioBlobs[id]) {
+        audioBlobs[id] = tempAudioBlobs[id];
+        
+        let status = document.getElementById(`status_${id}`);
+        let prevBtn = document.getElementById(`preview_${id}`);
+        let confBtn = document.getElementById(`confirm_${id}`);
+        let cardBody = document.querySelector(`#word_${id} .card-body`);
+        
+        status.innerHTML = '<i class="fa-solid fa-circle-check"></i> ശബ്ദം വിജയകരമായി ഉറപ്പിച്ചു!';
+        status.style.color = "#10b981";
+        status.setAttribute('data-audio', '');
+        
+        prevBtn.style.display = "none";
+        confBtn.style.display = "none";
+        cardBody.setAttribute('data-confirmed', 'true');
+    }
+}
+
+async function generateMasterZip() {
+    let zip = new JSZip();
+    let dataFolder = zip.folder("data");
+    
+    let madrassaNodes = document.querySelectorAll('.madrassa-card');
+    let wordNodes = document.querySelectorAll('.word-card');
+    
+    if(madrassaNodes.length === 0 || wordNodes.length === 0) {
+        alert("ദയവായി വിവരങ്ങൾ നൽകുക!");
+        return;
+    }
+
+    let unconfirmedCount = 0;
+    wordNodes.forEach(node => {
+        let cardBody = node.querySelector('.card-body');
+        if(cardBody.getAttribute('data-confirmed') === 'false') {
+            unconfirmedCount++;
+        }
+    });
+
+    if(unconfirmedCount > 0) {
+        alert(`⚠️ കൺഫേം ചെയ്യാത്ത ${unconfirmedCount} വാക്കുകൾ ഉണ്ട്! ദയവായി അവ 'OK ആണ്' ബട്ടൺ അമർത്തി ഉറപ്പിക്കുക അല്ലെങ്കിൽ റെക്കോർഡ് ചെയ്യുക.`);
+        return;
+    }
+    
+    let masterConfig = { madrassas: [], words: [] };
+    
+    madrassaNodes.forEach(node => {
+        let name = node.querySelector('.m-name').value.trim();
+        let meta = node.querySelector('.m-meta').value.trim();
+        let studentsRaw = node.querySelector('.m-students').value;
+        let studentsArr = studentsRaw.split(',').map(s=>s.trim()).filter(s=>s!=="");
+        
+        if(name && studentsArr.length > 0) {
+            masterConfig.madrassas.push({ name: name, metaInfo: meta, students: studentsArr });
+        }
+    });
+    
+    wordNodes.forEach(node => {
+        let id = node.id.split('_')[1];
+        let mal = node.querySelector('.w-mal').value.trim();
+        let arbi = node.querySelector('.w-arbi').value.trim();
+        let statusSpan = document.getElementById(`status_${id}`);
+        let oldAudioName = statusSpan ? statusSpan.getAttribute('data-audio') : '';
+        
+        if(mal && arbi) {
+            let audioName = oldAudioName ? oldAudioName : `audio_${id}_${Date.now()}.mp3`;
+            masterConfig.words.push({ mal: mal, arbiText: arbi, audio: audioName });
+            
+            if(audioBlobs[id]) {
+                dataFolder.file(audioName, audioBlobs[id]);
+            } else if(oldAudioName && importedAudioFiles[oldAudioName]) {
+                dataFolder.file(audioName, importedAudioFiles[oldAudioName]);
+            }
+        }
+    });
+    
+    dataFolder.file("data.json", JSON.stringify(masterConfig, null, 4));
+    
+    zip.generateAsync({type:"blob"}).then(content => {
+        let link = document.createElement("a");
+        link.href = URL.createObjectURL(content);
+        link.download = "master_package.zip";
+        link.click();
+    });
+}
+</script>
+</body>
+</html>
