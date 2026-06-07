@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi-Madrassa App Suite - Auto Admin Panel</title>
+    <title>Multi-Madrassa App Suite - Auto Folder Admin Panel</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
@@ -20,46 +20,26 @@
             --card-bg: #ffffff;
             --border: #e2e8f0;
         }
-
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
         body { background-color: var(--bg); color: var(--text); padding: 20px; }
         .container { max-width: 1000px; margin: 0 auto; }
-        
-        header {
-            text-align: center; margin-bottom: 30px; background: linear-gradient(135deg, var(--primary), #3b82f6);
-            color: white; padding: 30px 20px; border-radius: 16px; box-shadow: 0 10px 25px rgba(30, 58, 138, 0.15);
-        }
+        header { text-align: center; margin-bottom: 30px; background: linear-gradient(135deg, var(--primary), #3b82f6); color: white; padding: 30px 20px; border-radius: 16px; box-shadow: 0 10px 25px rgba(30, 58, 138, 0.15); }
         header h1 { font-size: 28px; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 12px; }
-
-        /* GitHub Sync Status Bar */
-        .sync-status {
-            background-color: #e0f2fe; border: 1px solid #7dd3fc; padding: 12px 20px;
-            border-radius: 10px; margin-bottom: 25px; display: flex; align-items: center; gap: 10px; font-weight: 600; color: #0369a1;
-        }
-
-        .section-header {
-            display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 700;
-            color: var(--primary); margin: 30px 0 15px 0; padding-bottom: 8px; border-bottom: 2px solid var(--border);
-        }
-
-        .card {
-            background-color: var(--card-bg); border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            border: 1px solid var(--border); margin-bottom: 20px; overflow: hidden; position: relative;
-        }
+        .sync-status { background-color: #e0f2fe; border: 1px solid #7dd3fc; padding: 12px 20px; border-radius: 10px; margin-bottom: 25px; display: flex; align-items: center; gap: 10px; font-weight: 600; color: #0369a1; }
+        .section-header { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 700; color: var(--primary); margin: 30px 0 15px 0; padding-bottom: 8px; border-bottom: 2px solid var(--border); }
+        .card { background-color: var(--card-bg); border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); border: 1px solid var(--border); margin-bottom: 20px; overflow: hidden; position: relative; }
         .madrassa-card { border-left: 5px solid var(--warning); background-color: #fffdf9; }
         .word-card { border-left: 5px solid var(--success); }
         .card-header { padding: 15px 20px; background-color: rgba(0, 0, 0, 0.02); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
         .madrassa-card .card-title { color: #b45309; font-weight:600; }
         .word-card .card-title { color: #047857; font-weight:600; }
         .card-body { padding: 20px; }
-
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
         .form-group-full { grid-column: 1 / -1; }
         label { font-size: 13px; font-weight: 600; color: var(--text-light); display:block; margin-bottom:5px; }
         input[type="text"], textarea { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 15px; }
         textarea { resize: vertical; min-height: 80px; }
         .arabic-input { direction: rtl; font-family: 'Amiri', sans-serif; font-size: 20px !important; }
-
         .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 18px; font-size: 14px; font-weight: 600; border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s; }
         .btn-primary { background-color: var(--primary); color: white; }
         .btn-success { background-color: var(--success); color: white; }
@@ -67,12 +47,10 @@
         .btn-outline { background-color: white; color: var(--primary); border: 1px solid var(--primary); }
         .btn-block { width: 100%; padding: 14px; font-size: 16px; }
         .btn-generate { background: linear-gradient(135deg, var(--warning), #f59e0b); color: #001f3f; font-size: 18px; margin-top: 25px; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3); }
-
         .audio-controls { display: flex; align-items: center; gap: 15px; margin-top: 10px; padding: 10px; background-color: var(--bg); border-radius: 8px; }
         .mic-btn { background-color: var(--danger); color: white; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; }
         .mic-btn.recording { background-color: var(--success); animation: pulse 1.2s infinite; }
         .audio-status { font-size: 13px; font-weight: 500; }
-
         @keyframes pulse {
             0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
             70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
@@ -85,11 +63,11 @@
 <div class="container">
     <header>
         <h1><i class="fa-solid fa-sliders"></i> വേർഡ് ആപ്പ് മാസ്റ്റർ അഡ്മിൻ പാനൽ</h1>
-        <p>പഴയ ഡാറ്റയും ശബ്ദങ്ങളും തനിയെ ലോഡ് ആയിക്കോളും. പുതിയ വിവരങ്ങൾ മാത്രം കൂട്ടിച്ചേർത്താൽ മതി.</p>
+        <p>ഡാറ്റ മുഴുവൻ 'data' എന്ന സിംഗിൾ ഫോൾഡറിലേക്ക് ഓട്ടോമാറ്റിക്കായി പാക്ക് ചെയ്യപ്പെടും.</p>
     </header>
 
     <div class="sync-status" id="syncStatus">
-        <i class="fa-solid fa-spinner fa-spin"></i> GitHub-ൽ നിന്ന് പഴയ വിവരങ്ങളും ഓഡിയോകളും ശേഖരിക്കുന്നു...
+        <i class="fa-solid fa-spinner fa-spin"></i> GitHub-ൽ നിന്ന് പഴയ 'data' ഫോൾഡർ വിവരങ്ങൾ ശേഖരിക്കുന്നു...
     </div>
 
     <div class="section-header">
@@ -101,17 +79,17 @@
     </button>
 
     <div class="section-header">
-        <i class="fa-solid fa-book-open"></i> 2. പാഠത്തിലെ വാക്കുകൾ (എല്ലാ മദ്രസകൾക്കും പൊതുവായത്)
+        <i class="fa-solid fa-book-open"></i> 2. പാഠത്തിലെ വാക്കുകൾ
     </div>
     <div id="wordsArea"></div>
     <button class="btn btn-success" onclick="addWordRow()">
         <i class="fa-solid fa-plus"></i> പുതിയ വാക്ക് ചേർക്കുക
     </button>
 
-    <hr>
+    <hr style="border:0; border-top:1px solid var(--border); margin:30px 0;">
     
     <button class="btn btn-primary btn-block btn-generate" onclick="generateMasterZip()">
-        <i class="fa-solid fa-box-archive"></i> എല്ലാ പഴയതും പുതിയതും ചേർത്തുള്ള പുതിയ ZIP ഡൗൺലോഡ് ചെയ്യുക
+        <i class="fa-solid fa-box-archive"></i> 'data' ഫോൾഡർ അടങ്ങിയ പുതിയ ZIP ഡൗൺലോഡ് ചെയ്യക്കുക
     </button>
 </div>
 
@@ -120,56 +98,53 @@ let madrassaCount = 0;
 let wordCount = 0;
 let audioBlobs = {}; 
 let mediaRecorders = {};
-let importedAudioFiles = {}; // ഗിറ്റ്‌ഹബിൽ നിന്ന് ഡൗൺലോഡ് ചെയ്യുന്ന പഴയ ഓഡിയോകൾ ഇവിടെ സൂക്ഷിക്കും
+let importedAudioFiles = {}; 
 
-// 🌐 പേജ് ലോഡ് ചെയ്യുമ്പോൾ ബാക്ക്ഗ്രൗണ്ടിൽ ഗിറ്റ്‌ഹബിൽ നിന്നും ഡാറ്റയും ഓഡിയോകളും ഓട്ടോമാറ്റിക് ആയി എടുക്കുന്ന ഫങ്ക്ഷൻ
+// 🌐 പേജ് ലോഡ് ചെയ്യുമ്പോൾ GitHub-ലെ 'data/data.json' ഫയലിൽ നിന്നും വിവരങ്ങൾ എടുക്കുന്നു
 window.onload = function() {
-    fetch('data.json')
+    fetch('data/data.json')
         .then(res => {
-            if (!res.ok) throw new Error("No old data found");
+            if (!res.ok) throw new Error("No old data folder found");
             return res.json();
         })
         .then(async oldData => {
             document.getElementById('madrassaArea').innerHTML = "";
             document.getElementById('wordsArea').innerHTML = "";
             
-            // 1. പഴയ മദ്രസകൾ ലോഡ് ചെയ്യുന്നു
             if(oldData.madrassas && oldData.madrassas.length > 0) {
                 oldData.madrassas.forEach(m => {
                     addMadrassaField(m.name, m.metaInfo, m.students.join(', '));
                 });
             } else { addMadrassaField(); }
             
-            // 2. പഴയ വാക്കുകൾ ലോഡ് ചെയ്യുകയും അതിനോടൊപ്പം ഉള്ള ഓഡിയോകൾ തനിയെ ബാക്ക്ഗ്രൗണ്ടിൽ ഡൗൺലോഡ് ചെയ്യുകയും ചെയ്യുന്നു
             if(oldData.words && oldData.words.length > 0) {
-                document.getElementById('syncStatus').innerHTML = `<i class="fa-solid fa-cloud-arrow-down"></i> പഴയ ഓഡിയോ ഫയലുകൾ മെമ്മറിയിലേക്ക് മാറ്റുന്നു... ദയവായി കാത്തിരിക്കുക...`;
+                document.getElementById('syncStatus').innerHTML = `<i class="fa-solid fa-cloud-arrow-down"></i> 'data' ഫോൾഡറിലെ പഴയ ശബ്ദങ്ങൾ മെമ്മറിയിലേക്ക് മാറ്റുന്നു...`;
                 
                 for(let w of oldData.words) {
                     addWordRow(w.mal, w.arbiText, w.audio);
                     
-                    // ഇന്റർനെറ്റ് വഴി പഴയ ഓരോ ഓഡിയോയും blob ആയി ഡൗൺലോഡ് ചെയ്ത് സൂക്ഷിക്കുന്നു
                     try {
-                        let audioRes = await fetch(w.audio);
+                        // ഓഡിയോ ഫയലുകൾ 'data/' ഫോൾഡറിൽ നിന്നാണ് വലിച്ചെടുക്കുന്നത്
+                        let audioRes = await fetch('data/' + w.audio);
                         if(audioRes.ok) {
                             let audioBlob = await audioRes.blob();
                             importedAudioFiles[w.audio] = audioBlob;
                         }
                     } catch(e) {
-                        console.log("പഴയ ഓഡിയോ ഡൗൺലോഡ് ചെയ്യാൻ പറ്റിയില്ല: " + w.audio);
+                        console.log("ഓഡിയോ ഫയൽ ലഭ്യമായില്ല: " + w.audio);
                     }
                 }
             } else { addWordRow(); }
             
-            document.getElementById('syncStatus').innerHTML = `<i class="fa-solid fa-circle-check" style="color:#10b981;"></i> എല്ലാ പഴയ വിവരങ്ങളും ഓഡിയോകളും റെഡിയാണ്! പുതിയവ താഴെ ചേർക്കാം.`;
+            document.getElementById('syncStatus').innerHTML = `<i class="fa-solid fa-circle-check" style="color:#10b981;"></i> പഴയ 'data' ഫോൾഡറിലെ വിവരങ്ങൾ വിജയകരമായി സിങ്ക് ചെയ്തു!`;
             document.getElementById('syncStatus').style.backgroundColor = "#ecfdf5";
             document.getElementById('syncStatus').style.color = "#047857";
             document.getElementById('syncStatus').style.borderColor = "#a7f3d0";
         })
         .catch(err => {
-            // പഴയ ഫയൽ ഇല്ലെങ്കിൽ പുതിയ കാർഡുകൾ കാണിക്കും
             addMadrassaField();
             addWordRow();
-            document.getElementById('syncStatus').innerHTML = `<i class="fa-solid fa-info-circle"></i> മുൻപ് ചെയ്ത ഡാറ്റ ഒന്നും കണ്ടെത്തിയില്ല. പുതിയതായി ആരംഭിക്കാം.`;
+            document.getElementById('syncStatus').innerHTML = `<i class="fa-solid fa-info-circle"></i> മുൻപ് ചെയ്ത 'data' ഫോൾഡർ ഒന്നും കണ്ടെത്തിയില്ല. പുതിയതായി ആരംഭിക്കാം.`;
         });
 };
 
@@ -190,15 +165,15 @@ function addMadrassaField(name = '', meta = '', students = '') {
             <div class="form-grid">
                 <div class="form-group" style="grid-column: span 2;">
                     <label>മദ്രസയുടെ പേര്:</label>
-                    <input type="text" class="m-name" value="${name}" placeholder="മദ്രസയുടെ പേര് ടൈപ്പ് ചെയ്യുക">
+                    <input type="text" class="m-name" value="${name}" placeholder="മദ്രസയുടെ പേര്">
                 </div>
                 <div class="form-group">
                     <label>ക്ലാസ്സ് / വിഷയം:</label>
-                    <input type="text" class="m-meta" value="${meta}" placeholder="ഉദാ: ക്ലാസ്സ് 2 - അറബി-മലയാളം">
+                    <input type="text" class="m-meta" value="${meta}" placeholder="ഉദാ: ക്ലാസ്സ് 2">
                 </div>
                 <div class="form-group form-group-full">
                     <label>കുട്ടികളുടെ പേരുകൾ (കോമയിട്ട് നൽകുക):</label>
-                    <textarea class="m-students" placeholder="ഉദാ: അൽത്താഫ്, ഫാത്തിമ, റയ്ഹാൻ">${students}</textarea>
+                    <textarea class="m-students" placeholder="ഉദാ: അൽത്താഫ്, ഫാത്തിമ">${students}</textarea>
                 </div>
             </div>
         </div>
@@ -223,10 +198,10 @@ function addWordRow(mal = '', arbi = '', existingAudioName = '') {
             <div class="form-grid">
                 <div class="form-group">
                     <label>മലയാളം വാക്ക്:</label>
-                    <input type="text" class="w-mal" value="${mal}" placeholder="ഉദാ: മലയാളം">
+                    <input type="text" class="w-mal" value="${mal}" placeholder="മലയാളം വാക്ക്">
                 </div>
                 <div class="form-group">
-                    <label>അറബി മലയാളം വാക്ക് (കൂട്ടിയെഴുതിയത്):</label>
+                    <label>അറബി മലയാളം വാക്ക്:</label>
                     <input type="text" class="w-arbi arabic-input" value="${arbi}" placeholder="مَلَيٰۻَمْ">
                 </div>
             </div>
@@ -235,7 +210,7 @@ function addWordRow(mal = '', arbi = '', existingAudioName = '') {
                     <i class="fa-solid fa-microphone"></i>
                 </button>
                 <span class="audio-status" id="status_${id}" style="color:${existingAudioName ? '#10b981' : '#4b5563'};" data-audio="${existingAudioName}">
-                    ${existingAudioName ? '<i class="fa-solid fa-circle-check"></i> പഴയ ശബ്ദം സുരക്ഷിതമായി പുതിയ ഫയലിലേക്ക് മാറ്റിയിട്ടുണ്ട്' : '<i class="fa-solid fa-circle-xmark"></i> ശബ്ദം റെക്കോർഡ് ചെയ്തിട്ടില്ല'}
+                    ${existingAudioName ? '<i class="fa-solid fa-circle-check"></i> പഴയ ശബ്ദം ഈ പാക്കേജിൽ ഉൾപ്പെടുത്തിയിട്ടുണ്ട്' : '<i class="fa-solid fa-circle-xmark"></i> ശബ്ദം റെക്കോർഡ് ചെയ്തിട്ടില്ല'}
                 </span>
             </div>
         </div>
@@ -274,6 +249,9 @@ function toggleMic(id) {
 
 async function generateMasterZip() {
     let zip = new JSZip();
+    // 📁 'data' എന്ന പേരിൽ ഒരു ഫോൾഡർ സിപ്പിനുള്ളിൽ ക്രിയേറ്റ് ചെയ്യുന്നു
+    let dataFolder = zip.folder("data");
+    
     let madrassaNodes = document.querySelectorAll('.madrassa-card');
     let wordNodes = document.querySelectorAll('.word-card');
     
@@ -306,20 +284,22 @@ async function generateMasterZip() {
             let audioName = oldAudioName ? oldAudioName : `audio_${id}_${Date.now()}.mp3`;
             masterConfig.words.push({ mal: mal, arbiText: arbi, audio: audioName });
             
+            // 📁 എല്ലാ ഫയലുകളും 'dataFolder' നുള്ളിലേക്കാണ് സേവ് ചെയ്യുന്നത്
             if(audioBlobs[id]) {
-                zip.file(audioName, audioBlobs[id]); 
+                dataFolder.file(audioName, audioBlobs[id]); 
             } else if(oldAudioName && importedAudioFiles[oldAudioName]) {
-                zip.file(audioName, importedAudioFiles[oldAudioName]); 
+                dataFolder.file(audioName, importedAudioFiles[oldAudioName]); 
             }
         }
     });
     
-    zip.file("data.json", JSON.stringify(masterConfig, null, 4));
+    // 📁 data.json ഫയലും data ഫോൾഡറിന്റെ ഉള്ളിലേക്ക് മാറ്റുന്നു
+    dataFolder.file("data.json", JSON.stringify(masterConfig, null, 4));
     
     zip.generateAsync({type:"blob"}).then(content => {
         let link = document.createElement("a");
         link.href = URL.createObjectURL(content);
-        link.download = "complete_new_master_data.zip";
+        link.download = "master_package.zip";
         link.click();
     });
 }
