@@ -47,9 +47,15 @@
         .btn-outline { background-color: white; color: var(--primary); border: 1px solid var(--primary); }
         .btn-block { width: 100%; padding: 14px; font-size: 16px; }
         .btn-generate { background: linear-gradient(135deg, var(--warning), #f59e0b); color: #001f3f; font-size: 18px; margin-top: 25px; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3); }
-        .audio-controls { display: flex; align-items: center; gap: 15px; margin-top: 10px; padding: 10px; background-color: var(--bg); border-radius: 8px; }
+        
+        /* Audio Controls */
+        .audio-controls { display: flex; align-items: center; gap: 12px; margin-top: 10px; padding: 10px; background-color: var(--bg); border-radius: 8px; flex-wrap: wrap; }
         .mic-btn { background-color: var(--danger); color: white; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; }
         .mic-btn.recording { background-color: var(--success); animation: pulse 1.2s infinite; }
+        
+        .preview-btn { background-color: #3b82f6; color: white; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; border: none; cursor: pointer; display: none; }
+        .confirm-btn { background-color: #10b981; color: white; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; border: none; cursor: pointer; display: none; }
+        
         .audio-status { font-size: 13px; font-weight: 500; }
         @keyframes pulse {
             0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
@@ -63,7 +69,7 @@
 <div class="container">
     <header>
         <h1><i class="fa-solid fa-sliders"></i> വേർഡ് ആപ്പ് മാസ്റ്റർ അഡ്മിൻ പാനൽ</h1>
-        <p>ഡാറ്റ മുഴുവൻ 'data' എന്ന സിംഗിൾ ഫോൾഡറിലേക്ക് ഓട്ടോമാറ്റിക്കായി പാക്ക് ചെയ്യപ്പെടും.</p>
+        <p>ശബ്ദം റെക്കോർഡ് ചെയ്ത് പ്ലേ ചെയ്തു നോക്കി ഉറപ്പിച്ചതിനു ശേഷം മാത്രം ആഡ് ചെയ്യാം.</p>
     </header>
 
     <div class="sync-status" id="syncStatus">
@@ -89,18 +95,18 @@
     <hr style="border:0; border-top:1px solid var(--border); margin:30px 0;">
     
     <button class="btn btn-primary btn-block btn-generate" onclick="generateMasterZip()">
-        <i class="fa-solid fa-box-archive"></i> 'data' ഫോൾഡർ അടങ്ങിയ പുതിയ ZIP ഡൗൺലോഡ് ചെയ്യക്കുക
+        <i class="fa-solid fa-box-archive"></i> 'data' ഫോൾഡർ അടങ്ങിയ പുതിയ ZIP ഡൗൺലോഡ് ചെയ്യുക
     </button>
 </div>
 
 <script>
 let madrassaCount = 0;
 let wordCount = 0;
-let audioBlobs = {}; 
+let audioBlobs = {}; // ഫൈനലായി കൺഫേം ചെയ്ത പുതിയ ബ്ലോബുകൾ
+let tempAudioBlobs = {}; // താല്കാലികമായി കേട്ടുനോക്കാൻ സൂക്ഷിക്കുന്ന ബ്ലോബുകൾ
 let mediaRecorders = {};
 let importedAudioFiles = {}; 
 
-// 🌐 പേജ് ലോഡ് ചെയ്യുമ്പോൾ GitHub-ലെ 'data/data.json' ഫയലിൽ നിന്നും വിവരങ്ങൾ എടുക്കുന്നു
 window.onload = function() {
     fetch('data/data.json')
         .then(res => {
@@ -124,7 +130,6 @@ window.onload = function() {
                     addWordRow(w.mal, w.arbiText, w.audio);
                     
                     try {
-                        // ഓഡിയോ ഫയലുകൾ 'data/' ഫോൾഡറിൽ നിന്നാണ് വലിച്ചെടുക്കുന്നത്
                         let audioRes = await fetch('data/' + w.audio);
                         if(audioRes.ok) {
                             let audioBlob = await audioRes.blob();
@@ -187,6 +192,10 @@ function addWordRow(mal = '', arbi = '', existingAudioName = '') {
     let div = document.createElement('div');
     div.className = 'card word-card';
     div.id = `word_${id}`;
+    
+    // പഴയ ഓഡിയോ ഉണ്ടെങ്കിൽ ഡാറ്റ-കൺഫേംഡ് ആയി സെറ്റ് ചെയ്യുന്നു
+    let isConfirmed = existingAudioName ? "true" : "false";
+
     div.innerHTML = `
         <div class="card-header">
             <div class="card-title"><i class="fa-solid fa-language"></i> വാക്ക് വിവരങ്ങൾ</div>
@@ -194,7 +203,7 @@ function addWordRow(mal = '', arbi = '', existingAudioName = '') {
                 <i class="fa-solid fa-trash"></i> Delete
             </button>
         </div>
-        <div class="card-body">
+        <div class="card-body" data-confirmed="${isConfirmed}">
             <div class="form-grid">
                 <div class="form-group">
                     <label>മലയാളം വാക്ക്:</label>
@@ -206,11 +215,20 @@ function addWordRow(mal = '', arbi = '', existingAudioName = '') {
                 </div>
             </div>
             <div class="audio-controls">
-                <button class="mic-btn" id="mic_${id}" onclick="toggleMic(${id})">
+                <button class="mic-btn" id="mic_${id}" onclick="toggleMic(${id})" title="റെക്കോർഡ് ചെയ്യുക">
                     <i class="fa-solid fa-microphone"></i>
                 </button>
+                
+                <button class="preview-btn" id="preview_${id}" onclick="previewTempAudio(${id})" title="കേട്ടുനോക്കുക">
+                    <i class="fa-solid fa-play"></i> കേട്ടുനോക്കൂ
+                </button>
+                
+                <button class="confirm-btn" id="confirm_${id}" onclick="confirmAudio(${id})" title="ഉറപ്പിക്കുക">
+                    <i class="fa-solid fa-check"></i> OK ആണ്
+                </button>
+
                 <span class="audio-status" id="status_${id}" style="color:${existingAudioName ? '#10b981' : '#4b5563'};" data-audio="${existingAudioName}">
-                    ${existingAudioName ? '<i class="fa-solid fa-circle-check"></i> പഴയ ശബ്ദം ഈ പാക്കേജിൽ ഉൾപ്പെടുത്തിയിട്ടുണ്ട്' : '<i class="fa-solid fa-circle-xmark"></i> ശബ്ദം റെക്കോർഡ് ചെയ്തിട്ടില്ല'}
+                    ${existingAudioName ? '<i class="fa-solid fa-circle-check"></i> പഴയ ശബ്ദം സുരക്ഷിതമാണ്' : '<i class="fa-solid fa-circle-xmark"></i> ശബ്ദം റെക്കോർഡ് ചെയ്തിട്ടില്ല'}
                 </span>
             </div>
         </div>
@@ -221,6 +239,9 @@ function addWordRow(mal = '', arbi = '', existingAudioName = '') {
 function toggleMic(id) {
     let btn = document.getElementById(`mic_${id}`);
     let status = document.getElementById(`status_${id}`);
+    let prevBtn = document.getElementById(`preview_${id}`);
+    let confBtn = document.getElementById(`confirm_${id}`);
+    let cardBody = document.querySelector(`#word_${id} .card-body`);
     
     if (mediaRecorders[id] && mediaRecorders[id].state === "recording") {
         mediaRecorders[id].stop();
@@ -233,23 +254,62 @@ function toggleMic(id) {
             let chunks = [];
             mediaRecorder.ondataavailable = e => chunks.push(e.data);
             mediaRecorder.onstop = () => {
-                audioBlobs[id] = new Blob(chunks, { type: 'audio/mp3' });
-                status.innerHTML = '<i class="fa-solid fa-circle-check"></i> പുതിയ ഓഡിയോ റെക്കോർഡ് ആയി!';
-                status.style.color = "#10b981";
-                status.setAttribute('data-audio', ''); 
+                // റെക്കോർഡിങ് നിർത്തുമ്പോൾ ഫയൽ tempAudioBlobs-ലേക്ക് താൽക്കാലികമായി മാറ്റുന്നു
+                tempAudioBlobs[id] = new Blob(chunks, { type: 'audio/mp3' });
+                
+                status.innerHTML = '⚠️ ശബ്ദം സേവ് ചെയ്തിട്ടില്ല! കേട്ടുനോക്കി കൺഫേം ചെയ്യുക.';
+                status.style.color = "#f59e0b";
+                
+                // പ്ലേ, കൺഫേം ബട്ടണുകൾ കാണിക്കുന്നു
+                prevBtn.style.display = "inline-flex";
+                confBtn.style.display = "inline-flex";
+                cardBody.setAttribute('data-confirmed', 'false');
             };
             mediaRecorder.start();
             btn.classList.add('recording');
             btn.innerHTML = '<i class="fa-solid fa-stop"></i>';
             status.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> റെക്കോർഡിങ്...';
             status.style.color = "#ef4444";
+            
+            // പുതിയ റെക്കോർഡിങ് തുടങ്ങുമ്പോൾ പഴയ ബട്ടണുകൾ ഒളിപ്പിക്കുന്നു
+            prevBtn.style.display = "none";
+            confBtn.style.display = "none";
         }).catch(e => alert("മൈക്ക് പെർമിഷൻ തരണം!"));
+    }
+}
+
+// 🎧 റെക്കോർഡ് ചെയ്ത ശബ്ദം താല്കാലികമായി പ്ലേ ചെയ്ത് കേൾക്കാനുള്ള ഫങ്ക്ഷൻ
+function previewTempAudio(id) {
+    if (tempAudioBlobs[id]) {
+        let url = URL.createObjectURL(tempAudioBlobs[id]);
+        let audio = new Audio(url);
+        audio.play().catch(e => alert("പ്ലേ ചെയ്യാൻ കഴിഞ്ഞില്ല!"));
+    }
+}
+
+// ✅ ശബ്ദം തൃപ്തികരമാണെങ്കിൽ ഫൈനൽ ലിസ്റ്റിലേക്ക് കൺഫേം ചെയ്യുന്ന ഫങ്ക്ഷൻ
+function confirmAudio(id) {
+    if (tempAudioBlobs[id]) {
+        audioBlobs[id] = tempAudioBlobs[id]; // മെയിൻ ഒബ്ജക്റ്റിലേക്ക് മാറ്റി
+        
+        let status = document.getElementById(`status_${id}`);
+        let prevBtn = document.getElementById(`preview_${id}`);
+        let confBtn = document.getElementById(`confirm_${id}`);
+        let cardBody = document.querySelector(`#word_${id} .card-body`);
+        
+        status.innerHTML = '<i class="fa-solid fa-circle-check"></i> ശബ്ദം വിജയകരമായി ഉറപ്പിച്ചു!';
+        status.style.color = "#10b981";
+        status.setAttribute('data-audio', ''); // പഴയ ഓഡിയോ ഫയൽ ഉണ്ടെങ്കിൽ ലിങ്ക് കളയുക
+        
+        // ബട്ടണുകൾ തിരികെ ഒളിപ്പിക്കുന്നു
+        prevBtn.style.display = "none";
+        confBtn.style.display = "none";
+        cardBody.setAttribute('data-confirmed', 'true'); // കൺഫേംഡ് ആയി മാർക്ക് ചെയ്തു
     }
 }
 
 async function generateMasterZip() {
     let zip = new JSZip();
-    // 📁 'data' എന്ന പേരിൽ ഒരു ഫോൾഡർ സിപ്പിനുള്ളിൽ ക്രിയേറ്റ് ചെയ്യുന്നു
     let dataFolder = zip.folder("data");
     
     let madrassaNodes = document.querySelectorAll('.madrassa-card');
@@ -257,6 +317,20 @@ async function generateMasterZip() {
     
     if(madrassaNodes.length === 0 || wordNodes.length === 0) {
         alert("ദയവായി വിവരങ്ങൾ നൽകുക!");
+        return;
+    }
+
+    // ശബ്ദം റെക്കോർഡ് ചെയ്തിട്ട് 'OK ആണ്' എന്ന് കൺഫേം ചെയ്യാത്ത വാക്കുകൾ ഉണ്ടോ എന്ന് നോക്കുന്നു
+    let unconfirmedCount = 0;
+    wordNodes.forEach(node => {
+        let cardBody = node.querySelector('.card-body');
+        if(cardBody.getAttribute('data-confirmed') === 'false') {
+            unconfirmedCount++;
+        }
+    });
+
+    if(unconfirmedCount > 0) {
+        alert(`⚠️ കൺഫേം ചെയ്യാത്ത ${unconfirmedCount} വാക്കുകൾ ഉണ്ട്! ദയവായി അവ 'OK ആണ്' ബട്ടൺ അമർത്തി ഉറപ്പിക്കുക അല്ലെങ്കിൽ റെക്കോർഡ് ചെയ്യുക.`);
         return;
     }
     
@@ -284,16 +358,14 @@ async function generateMasterZip() {
             let audioName = oldAudioName ? oldAudioName : `audio_${id}_${Date.now()}.mp3`;
             masterConfig.words.push({ mal: mal, arbiText: arbi, audio: audioName });
             
-            // 📁 എല്ലാ ഫയലുകളും 'dataFolder' നുള്ളിലേക്കാണ് സേവ് ചെയ്യുന്നത്
             if(audioBlobs[id]) {
-                dataFolder.file(audioName, audioBlobs[id]); 
+                dataFolder.file(audioName, audioBlobs[id]); // പുതിയ കൺഫേം ചെയ്ത ഓഡിയോ ഫയൽ
             } else if(oldAudioName && importedAudioFiles[oldAudioName]) {
-                dataFolder.file(audioName, importedAudioFiles[oldAudioName]); 
+                dataFolder.file(audioName, importedAudioFiles[oldAudioName]); // പഴയ ഫയൽ നിലനിർത്തുന്നു
             }
         }
     });
     
-    // 📁 data.json ഫയലും data ഫോൾഡറിന്റെ ഉള്ളിലേക്ക് മാറ്റുന്നു
     dataFolder.file("data.json", JSON.stringify(masterConfig, null, 4));
     
     zip.generateAsync({type:"blob"}).then(content => {
