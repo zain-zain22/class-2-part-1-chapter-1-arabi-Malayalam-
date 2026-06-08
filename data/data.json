@@ -1,0 +1,56 @@
+{
+    "madrassas": [
+        {
+            "name": "ഇൽഫത്തുൽ ഇസ്ലാം",
+            "metaInfo": "",
+            "students": [
+                "Fayzy",
+                "zain",
+                "hidash",
+                "alim"
+            ]
+        }
+    ],
+    "words": [
+        {
+            "mal": "റബ്ബാണ്",
+            "arbiText": "رَبّٰاڹْ",
+            "audio": "audio_1_1780841598073.mp3"
+        },
+        {
+            "mal": "നമ്മുടെ",
+            "arbiText": "نَمُّڊۧ",
+            "audio": "audio_3_1780841598074.mp3"
+        },
+        {
+            "mal": "അള്ളാഹു",
+            "arbiText": "اَللّٰهُ",
+            "audio": "audio_3_1780878593356.mp3"
+        },
+        {
+            "mal": "നമ്മേ",
+            "arbiText": "نَمّي٘",
+            "audio": "audio_4_1780878593356.mp3"
+        },
+        {
+            "mal": "പടച്ചവൻ",
+            "arbiText": "پَڊَچَّوَنْ",
+            "audio": "audio_5_1780878593356.mp3"
+        },
+        {
+            "mal": "എല്ലാം",
+            "arbiText": "ا٘لَّامْ",
+            "audio": "audio_6_1780878593356.mp3"
+        },
+        {
+            "mal": "കാണും",
+            "arbiText": "كَاڹُمْ",
+            "audio": "audio_7_1780878593356.mp3"
+        },
+        {
+            "mal": "കേൾക്കും",
+            "arbiText": "ك٘يۻۡكُّمْ",
+            "audio": "audio_8_1780878593356.mp3"
+        }
+    ]
+}
