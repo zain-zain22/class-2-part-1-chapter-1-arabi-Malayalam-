@@ -1,0 +1,98 @@
+{
+    "madrassas": [
+        {
+            "name": "ഇൽഫത്തുൽ ഇസ്ലാം",
+            "metaInfo": "",
+            "students": [
+                "Fayzy",
+                "zain",
+                "hidash",
+                "alim",
+                "anas",
+                "thameem",
+                "hasmina",
+                "hadiya",
+                "inaya",
+                "razwa",
+                "shazwa"
+            ]
+        }
+    ],
+    "words": [
+        {
+            "mal": "റബ്ബാണ്",
+            "arbiText": "رَبّٰاڹْ",
+            "audio": "audio_1_1780841598073.mp3"
+        },
+        {
+            "mal": "നമ്മുടെ",
+            "arbiText": "نَمُّڊ٘",
+            "audio": "audio_3_1780841598074.mp3"
+        },
+        {
+            "mal": "അള്ളാഹു",
+            "arbiText": "اَللّٰهُ",
+            "audio": "audio_3_1780881234829.mp3"
+        },
+        {
+            "mal": "നമ്മേ",
+            "arbiText": "نَمّ٘ي",
+            "audio": "audio_4_1780881234829.mp3"
+        },
+        {
+            "mal": "പടച്ചവൻ",
+            "arbiText": "پَڊَچَّوَنْ",
+            "audio": "audio_5_1780881234829.mp3"
+        },
+        {
+            "mal": "എല്ലാം",
+            "arbiText": "ا٘لَّامْ",
+            "audio": "audio_6_1780881234829.mp3"
+        },
+        {
+            "mal": "കാണും",
+            "arbiText": "كَاڹُمْ",
+            "audio": "audio_7_1780881234830.mp3"
+        },
+        {
+            "mal": "കേൾക്കും",
+            "arbiText": "ك٘يۻۡكُّمْ",
+            "audio": "audio_8_1780881234830.mp3"
+        },
+        {
+            "mal": "അറിയും",
+            "arbiText": "اَرِیُمْ",
+            "audio": "audio_9_1780881234830.mp3"
+        },
+        {
+            "mal": "തന്നവൻ",
+            "arbiText": "تَنَّوَنْ",
+            "audio": "audio_10_1780881234830.mp3"
+        },
+        {
+            "mal": "സർവ്വ ശക്തൻ",
+            "arbiText": "سَرٛوَّ ۺَكْتَنْ",
+            "audio": "audio_11_1780881234830.mp3"
+        },
+        {
+            "mal": "കരുണാ വാരിധി",
+            "arbiText": "كَڔُڹَا وَاڔِدِھ",
+            "audio": "audio_12_1780881234830.mp3"
+        },
+        {
+            "mal": "സ്വർഗം",
+            "arbiText": "سْوَرٛگَمٛ",
+            "audio": "audio_13_1780881234830.mp3"
+        },
+        {
+            "mal": "ആരാമം",
+            "arbiText": "آڔَامَمٛ",
+            "audio": "audio_14_1780881234830.mp3"
+        },
+        {
+            "mal": "തന്നിടണേ",
+            "arbiText": "تَنِّڊَڹ٘ي",
+            "audio": "audio_15_1780881234830.mp3"
+        }
+    ]
+}
