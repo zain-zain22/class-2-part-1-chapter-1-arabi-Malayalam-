@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Madrassa Word Game - Hardcore Mode</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #eff6ff;
+            --success: #10b981;
+            --success-light: #ecfdf5;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --text: #1f2937;
+            --text-light: #4b5563;
+            --bg: #f0f4f8;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: var(--bg); color: var(--text); padding: 15px; }
+        .container { max-width: 500px; margin: 0 auto; }
+        
+        header { text-align: center; margin-bottom: 15px; background: linear-gradient(135deg, var(--primary), #3b82f6); color: white; padding: 20px 15px; border-radius: 16px; box-shadow: 0 6px 15px rgba(30, 58, 138, 0.1); }
+        header h1 { font-size: 21px; margin-bottom: 5px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        header p { font-size: 13px; opacity: 0.9; }
+        
+        .selection-box { background-color: var(--card-bg); padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); border: 1px solid var(--border); margin-bottom: 15px; }
+        .form-group { margin-bottom: 12px; }
+        label { display: block; font-size: 13px; font-weight: 600; color: var(--text-light); margin-bottom: 5px; }
+        select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 15px; background-color: #f8fafc; outline: none; cursor: pointer; }
+        
+        .welcome-msg { text-align: center; padding: 10px; background-color: var(--primary-light); color: var(--primary); border-radius: 8px; font-weight: 600; margin-bottom: 15px; display: none; }
+        
+        /* GAME ZONE */
+        .game-container { background-color: var(--card-bg); border-radius: 16px; padding: 25px 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid var(--border); display: none; text-align: center; position: relative; }
+        
+        /* സ്പീക്കർ */
+        .master-speaker-btn { background: radial-gradient(circle, #3b82f6, var(--primary)); color: white; width: 85px; height: 85px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; border: 5px solid #fff; cursor: pointer; font-size: 32px; margin-bottom: 15px; box-shadow: 0 6px 15px rgba(30, 58, 138, 0.3); transition: transform 0.2s; }
+        .master-speaker-btn.playing { animation: speaker-pulse 1s infinite alternate; background: radial-gradient(circle, #10b981, #047857); }
+        @keyframes speaker-pulse { 0% { transform: scale(1); } 100% { transform: scale(1.05); } }
+        
+        /* മലയാളം വാക്ക് */
+        .malayalam-word-display { font-size: 24px; font-weight: 800; color: var(--text); margin-bottom: 20px; background-color: #f8fafc; padding: 6px 20px; border-radius: 30px; display: inline-block; border: 1px dashed #cbd5e1; }
+        
+        /* ഉത്തരം വരുന്ന ബോക്സ് */
+        .answer-zone { background: linear-gradient(to bottom, #f0fdf4, #bbf7d0); border: 3px solid var(--success); border-radius: 16px; padding: 15px; margin-bottom: 20px; min-height: 75px; display: flex; align-items: center; justify-content: center; }
+        .arabic-text-output { font-size: 38px; color: #047857; font-family: 'Amiri', serif; font-weight: bold; direction: rtl; text-align: center; line-height: 1.2; }
+        
+        /* അക്ഷരങ്ങൾ */
+        .letters-pool { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 25px; min-height: 55px; direction: rtl; }
+        .letter-block { background-color: #f8fafc; border: 2px solid #cbd5e1; border-bottom: 5px solid #cbd5e1; border-radius: 12px; min-width: 48px; height: 50px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: bold; color: #1e293b; cursor: pointer; user-select: none; font-family: 'Amiri', serif; padding: 0 6px; }
+        .letter-block:active { transform: translateY(2px); border-bottom-width: 3px; }
+        .letter-block.wrong { background-color: #fee2e2; border-color: var(--danger); border-bottom-color: var(--danger); color: var(--danger); animation: shake 0.3s; }
+        .letter-block.disabled { opacity: 0.3; pointer-events: none; background-color: #e2e8f0; border-bottom-width: 2px; }
+        
+        .success-overlay { background-color: var(--success-light); border: 2px solid var(--success); border-radius: 12px; padding: 15px; margin-top: 15px; display: none; }
+        
+        /* ടൈമറും സ്റ്റാറ്റ്സും */
+        .game-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 20px; font-size: 11px; font-weight: 700; color: var(--text-light); background-color: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid var(--border); }
+        .stat-box { display: flex; flex-direction: column; align-items: center; }
+        .stat-val { font-size: 14px; color: var(--primary); margin-top: 2px; }
+
+        /* 🏆 CERTIFICATE STYLE */
+        .certificate-container { background: #ffffff; border: 10px double #b45309; padding: 30px 20px; border-radius: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: none; text-align: center; color: #1e293b; position: relative; margin-top: 10px; background-image: radial-gradient(#fef3c7 1px, transparent 0); background-size: 20px 20px; }
+        .cert-header { font-size: 26px; color: #b45309; font-weight: 800; margin-bottom: 5px; letter-spacing: 1px; }
+        .cert-sub { font-size: 13px; font-style: italic; color: #64748b; margin-bottom: 25px; text-transform: uppercase; border-bottom: 1px solid #f59e0b; padding-bottom: 5px; }
+        .cert-body { font-size: 16px; line-height: 1.6; margin-bottom: 25px; }
+        .cert-name { font-size: 24px; font-weight: 800; color: var(--primary); border-bottom: 2px dotted #b45309; display: inline-block; padding: 0 15px; margin: 5px 0; }
+        .cert-madrassa { font-weight: 700; color: #047857; }
+        .cert-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px dashed #cbd5e1; font-size: 13px; text-align: left; max-width: 340px; margin: 0 auto 25px auto; }
+        .cert-grid div { margin-bottom: 3px; }
+        .cert-badge { font-size: 45px; color: #f59e0b; margin-bottom: 15px; }
+        
+        /* SCREENSHOT NOTICE */
+        .screenshot-notice { background-color: #fef2f2; border: 2px dashed var(--danger); color: var(--danger); padding: 15px; border-radius: 12px; margin-top: 20px; font-weight: 700; font-size: 14px; text-align: center; animation: pulse-border 1.5s infinite; display: none; }
+
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+        @keyframes pulse-border { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+        .no-data { text-align: center; color: var(--text-light); padding: 30px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header id="mainHeader">
+        <h1><i class="fa-solid fa-skull-crossbones" style="color:var(--warning)"></i> സൂപ്പർ വേർഡ് ചലഞ്ച്</h1>
+        <p id="appMeta">ഒരു തെറ്റ് സംഭവിച്ചാൽ കളി ആദ്യത്തെ വാക്ക് മുതൽ വീണ്ടും തുടങ്ങും!</p>
+    </header>
+
+    <div class="selection-box" id="setupBox">
+        <div class="form-group">
+            <label><i class="fa-solid fa-mosque"></i> മദ്രസ സെലക്ട് ചെയ്യുക:</label>
+            <select id="madrassaSelect" onchange="updateStudentsDropdown()">
+                <option value="">-- മദ്രസ തിരഞ്ഞെടുക്കുക --</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label><i class="fa-solid fa-user-graduate"></i> കുട്ടിയുടെ പേര്:</label>
+            <select id="studentSelect" onchange="startGame()">
+                <option value="">-- പേര് തിരഞ്ഞെടുക്കുക --</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="welcome-msg" id="welcomeBox"></div>
+
+    <div class="game-container" id="gameZone">
+        <button class="master-speaker-btn" id="speakerBtn" onclick="playCurrentWordAudio()">
+            <i class="fa-solid fa-volume-high"></i>
+        </button>
+        
+        <div>
+            <div class="malayalam-word-display" id="malWordDisplay">---</div>
+        </div>
+        
+        <div class="answer-zone">
+            <div class="arabic-text-output" id="arabicOutput"></div>
+        </div>
+        
+        <div style="font-size: 12px; font-weight: 600; margin-bottom: 10px; color: var(--text-light);">അക്ഷരങ്ങൾ തൊടുക (തെറ്റിയാൽ ഒന്നാമത്തെ വാക്ക് മുതൽ വരും):</div>
+        <div class="letters-pool" id="lettersPool"></div>
+        
+        <div class="success-overlay" id="successBox">
+            <h3 style="color:#047857; font-size:15px; margin-bottom:8px;"><i class="fa-solid fa-circle-check"></i> ശരിയാണ്! അടുത്തതിലേക്ക്...</h3>
+            <button class="btn btn-success" style="padding:6px 15px; font-size:13px;" onclick="goToNextWord()">
+                അടുത്ത വാക്ക് <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+        
+        <div class="game-stats">
+            <div class="stat-box">
+                <span>നിലവിലെ വാക്ക്</span>
+                <span class="stat-val" id="wordProgress">0 / 0</span>
+            </div>
+            <div class="stat-box" style="border-left: 1px solid var(--border); border-right: 1px solid var(--border);">
+                <span>ആകെ സമയം</span>
+                <span class="stat-val" id="timerDisplay">0s</span>
+            </div>
+            <div class="stat-box">
+                <span>ആകെ തെറ്റുകൾ</span>
+                <span class="stat-val" id="mistakeDisplay" style="color:var(--danger)">0</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="certificate-container" id="certificateBox">
+        <div class="cert-badge"><i class="fa-solid fa-award"></i></div>
+        <div class="cert-header">വിജയ സർട്ടിഫിക്കറ്റ്</div>
+        <div class="cert-sub">പെർഫെക്ട് വേർഡ് ഗെയിം പൂർത്തിയാക്കി</div>
+        
+        <div class="cert-body">
+            ഇതുവഴി സാക്ഷ്യപ്പെടുത്തുന്നു, മിടുക്കനായ/മിടുക്കിയായ <br>
+            <span class="cert-name" id="certStudentName">---</span><br>
+            എല്ലാ അറബി-മലയാളം വാക്കുകളും വിജയിച്ച് ചലഞ്ച് പൂർത്തിയാക്കിയിരിക്കുന്നു.
+        </div>
+        
+        <div class="cert-grid">
+            <div><b>🕌 മദ്രസ:</b> <span id="certMadrassa" class="cert-madrassa">---</span></div>
+            <div><b>📚 ക്ലാസ്സ്/വിഷയം:</b> <span id="certMeta">---</span></div>
+            <div><b>⏱️ ആകെ സമയം:</b> <span id="certTime">---</span> സെക്കൻഡ്</div>
+            <div><b>🔄 ആകെ ശ്രമങ്ങൾ (Attempts):</b> <span id="certAttempts">---</span> തവണ</div>
+            <div><b>📅 തീയതി:</b> <span id="certDate">---</span></div>
+            <div style="grid-column: span 2; border-top: 1px dashed #b45309; padding-top: 5px; margin-top: 5px; font-size: 14px; text-align: center; color: #b45309;">
+                <b>🏆 ഫൈനൽ പോയിന്റ്: <span id="certScore">---</span></b>
+            </div>
+        </div>
+        
+        <div style="font-size: 11px; color: #64748b; font-style: italic;">"കുറഞ്ഞ ശ്രമങ്ങളും കുറഞ്ഞ സമയവും എടുത്തവർക്കാണ് മികച്ച പോയിന്റ്"</div>
+    </div>
+
+    <div class="screenshot-notice" id="screenshotNotice">
+        <i class="fa-solid fa-camera"></i> ദയവായി ഈ സർട്ടിഫിക്കറ്റിന്റെ ഒരു സ്ക്രീൻഷോട്ട് (Screenshot) എടുത്ത് നിങ്ങളുടെ ഉസ്താദിന് വാട്സ്ആപ്പിൽ അയച്ചു കൊടുക്കുക.
+    </div>
+    
+    <div id="loadingArea" class="no-data">
+        <i class="fa-solid fa-spinner fa-spin"></i> വിവരങ്ങൾ ശേഖക്കുന്നു...
+    </div>
+</div>
+
+<script>
+let appData = { madrassas: [], words: [] };
+let currentWordIndex = 0;
+let currentWordObj = null;
+let targetLettersSequence = []; 
+let currentTypedLetters = []; 
+let currentAudio = null;
+
+// സ്കോറിംഗ് വേരിയബിളുകൾ
+let totalMistakes = 0;
+let totalSeconds = 0;
+let timerInterval = null;
+let gameActive = false;
+
+document.addEventListener("DOMContentLoaded", function() {
+    fetch('data/data.json')
+        .then(res => {
+            if(!res.ok) throw new Error("Data missing");
+            return res.json();
+        })
+        .then(data => {
+            appData = data;
+            document.getElementById('loadingArea').style.display = 'none';
+            populateMadrassaDropdown();
+        })
+        .catch(err => {
+            document.getElementById('loadingArea').innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="color:var(--danger)"></i> 'data' ഫോൾഡർ കണ്ടില്ല!`;
+        });
+});
+
+function populateMadrassaDropdown() {
+    let select = document.getElementById("madrassaSelect");
+    appData.madrassas.forEach((m, index) => {
+        let opt = document.createElement("option");
+        opt.value = index;
+        opt.textContent = m.name;
+        select.appendChild(opt);
+    });
+}
+
+function updateStudentsDropdown() {
+    let mIndex = document.getElementById("madrassaSelect").value;
+    let sSelect = document.getElementById("studentSelect");
+    document.getElementById("gameZone").style.display = "none";
+    document.getElementById("certificateBox").style.display = "none";
+    document.getElementById("screenshotNotice").style.display = "none";
+    
+    sSelect.innerHTML = '<option value="">-- പേര് തിരഞ്ഞെടുക്കുക --</option>';
+    document.getElementById("welcomeBox").style.display = 'none';
+    if(mIndex === "") return;
+    
+    appData.madrassas[mIndex].students.forEach(student => {
+        let opt = document.createElement("option");
+        opt.value = student;
+        opt.textContent = student;
+        sSelect.appendChild(opt);
+    });
+}
+
+function startGame() {
+    let studentName = document.getElementById("studentSelect").value;
+    let welcomeBox = document.getElementById("welcomeBox");
+    let gameZone = document.getElementById("gameZone");
+    
+    if(studentName === "") {
+        welcomeBox.style.display = 'none';
+        gameZone.style.display = 'none';
+        return;
+    }
+    
+    welcomeBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="color:var(--warning)"></i> ജാഗ്രത! ഒരു അക്ഷരം തെറ്റിയാൽ കളി തീരും, അടുത്ത ആൾക്കായി ലിസ്റ്റ് വരും!`;
+    welcomeBox.style.display = 'block';
+    
+    // 💾 ബാക്ക്ഗ്രൗണ്ടിൽ കുട്ടിയുടെ അറ്റൻഡ് കൗണ്ട് (Attempt Count) ഒന്ന് കൂട്ടുന്നു
+    let currentAttempts = localStorage.getItem("attempts_" + studentName) || 0;
+    currentAttempts = parseInt(currentAttempts) + 1;
+    localStorage.setItem("attempts_" + studentName, currentAttempts);
+    
+    currentWordIndex = 0;
+    totalMistakes = 0;
+    totalSeconds = 0;
+    gameActive = true;
+    
+    document.getElementById("mistakeDisplay").textContent = totalMistakes;
+    document.getElementById("timerDisplay").textContent = "0s";
+    document.getElementById("certificateBox").style.display = "none";
+    document.getElementById("screenshotNotice").style.display = "none";
+    
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        if(gameActive) {
+            totalSeconds++;
+            document.getElementById("timerDisplay").textContent = totalSeconds + "s";
+        }
+    }, 1000);
+    
+    gameZone.style.display = "block";
+    loadWordLevel();
+}
+
+function splitArabicWord(word) {
+    return word.match(/[\u0600-\u06ff][\u064b-\u065f]*/g) || [];
+}
+
+function loadWordLevel() {
+    document.getElementById("successBox").style.display = "none";
+    document.getElementById("arabicOutput").textContent = "";
+    currentTypedLetters = [];
+    
+    currentWordObj = appData.words[currentWordIndex];
+    document.getElementById("wordProgress").textContent = `${currentWordIndex + 1} / ${appData.words.length}`;
+    document.getElementById("malWordDisplay").textContent = currentWordObj.mal;
+    
+    targetLettersSequence = splitArabicWord(currentWordObj.arbiText);
+    
+    generateLetterPool();
+    setTimeout(playCurrentWordAudio, 300);
+}
+
+function generateLetterPool() {
+    let pool = document.getElementById("lettersPool");
+    pool.innerHTML = "";
+    
+    let shuffled = targetLettersSequence.map((l, i) => ({ text: l, idx: i }));
+    shuffled.sort(() => Math.random() - 0.5);
+    
+    shuffled.forEach(item => {
+        let block = document.createElement("div");
+        block.className = "letter-block";
+        block.textContent = item.text;
+        block.id = `block_${item.idx}`;
+        block.onclick = () => handleLetterClick(item.text, block);
+        pool.appendChild(block);
+    });
+}
+
+function playCurrentWordAudio() {
+    if(!currentWordObj) return;
+    let btn = document.getElementById("speakerBtn");
+    if (currentAudio) currentAudio.pause();
+    
+    currentAudio = new Audio('data/' + currentWordObj.audio);
+    btn.classList.add("playing");
+    currentAudio.play().catch(e => console.log("Audio play error"));
+    currentAudio.onended = () => btn.classList.remove("playing");
+}
+
+function handleLetterClick(letterText, element) {
+    let nextRequiredLetter = targetLettersSequence[currentTypedLetters.length];
+    
+    if (letterText === nextRequiredLetter) {
+        currentTypedLetters.push(letterText);
+        element.classList.add("disabled"); 
+        
+        document.getElementById("arabicOutput").textContent = currentTypedLetters.join("");
+        
+        if (currentTypedLetters.length === targetLettersSequence.length) {
+            document.getElementById("successBox").style.display = "block";
+        }
+    } else {
+        // 🛑 തെറ്റ് സംഭവിച്ചു!!
+        totalMistakes++;
+        document.getElementById("mistakeDisplay").textContent = totalMistakes;
+        element.classList.add("wrong");
+        
+        gameActive = false;
+        clearInterval(timerInterval);
+        
+        setTimeout(() => {
+            element.classList.remove("wrong");
+            alert(`❌ അക്ഷരം തെറ്റിപ്പോയി! അടുത്ത ആൾക്ക് അവസരം നൽക്കാൻ മെനുവിലേക്ക് പോകുന്നു.`);
+            
+            // 🔄 ഗെയിം പാനൽ ഒളിപ്പിച്ച് മെയിൻ ലിസ്റ്റ് സെലക്ഷൻ തിരികെ കൊണ്ടുവരുന്നു
+            document.getElementById("gameZone").style.display = "none";
+            document.getElementById("welcomeBox").style.display = "none";
+            document.getElementById("studentSelect").value = ""; // ഡ്രോപ്പ്ഡൗൺ റീസെറ്റ് ചെയ്യുന്നു
+        }, 200);
+    }
+}
+
+function goToNextWord() {
+    currentWordIndex++;
+    if (currentWordIndex < appData.words.length) {
+        loadWordLevel();
+    } else {
+        gameActive = false;
+        clearInterval(timerInterval);
+        showCertificate();
+    }
+}
+
+function showCertificate() {
+    document.getElementById("gameZone").style.display = "none";
+    document.getElementById("setupBox").style.display = "none";
+    document.getElementById("welcomeBox").style.display = "none";
+    document.getElementById("mainHeader").style.display = "none";
+    
+    let mIndex = document.getElementById("madrassaSelect").value;
+    let studentName = document.getElementById("studentSelect").value;
+    let madrassaObj = appData.madrassas[mIndex];
+    
+    // 💾 കുട്ടിയുടെ ടോട്ടൽ അറ്റംപ്റ്റുകൾ localStorage-ൽ നിന്ന് എടുക്കുന്നു
+    let totalAttempts = localStorage.getItem("attempts_" + studentName) || 1;
+    
+    // പുതിയ പോയിന്റ് ഫോർമുല: (Attempts * 50) + Time (തെറ്റിയാൽ ലിസ്റ്റിലേക്ക് പോകുന്നതിനാൽ Mistakes ഇവിടെ ഉണ്ടാകില്ല)
+    let finalScore = (parseInt(totalAttempts) * 50) + totalSeconds;
+    
+    let today = new Date();
+    let dateString = today.getDate() + '/' + (today.getMonth()+1) + '/' + today.getFullYear();
+    
+    document.getElementById("certStudentName").textContent = studentName;
+    document.getElementById("certMadrassa").textContent = madrassaObj.name;
+    document.getElementById("certMeta").textContent = madrassaObj.metaInfo || "---";
+    document.getElementById("certTime").textContent = totalSeconds;
+    document.getElementById("certAttempts").textContent = totalAttempts;
+    document.getElementById("certDate").textContent = dateString;
+    document.getElementById("certScore").textContent = finalScore;
+    
+    document.getElementById("certificateBox").style.display = "block";
+    document.getElementById("screenshotNotice").style.display = "block";
+}
+</script>
+</body>
+</html>
