@@ -162,7 +162,7 @@
             <div><b>📚 ക്ലാസ്സ്/വിഷയം:</b> <span id="certMeta">---</span></div>
             <div><b>⏱️ ആകെ സമയം:</b> <span id="certTime">---</span> സെക്കൻഡ്</div>
             <div><b>🔄 ആകെ ശ്രമങ്ങൾ (Attempts):</b> <span id="certAttempts">---</span> തവണ</div>
-            <div><b>📅 തീയതി:</b> <span id="certDate">---</span></div>
+            <div><b>📅 തീയതിയും സമയവും:</b> <span id="certDate">---</span></div>
             <div style="grid-column: span 2; border-top: 1px dashed #b45309; padding-top: 5px; margin-top: 5px; font-size: 14px; text-align: center; color: #b45309;">
                 <b>🏆 ഫൈനൽ പോയിന്റ്: <span id="certScore">---</span></b>
             </div>
@@ -250,7 +250,7 @@ function startGame() {
         return;
     }
     
-    welcomeBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="color:var(--warning)"></i> ജാഗ്രത! ഒരു അക്ഷരം തെറ്റിയാൽ കളി തീരും, അടുത്ത ആൾക്കായി ലിസ്റ്റ് വരും!`;
+    welcomeBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="color:var(--warning)"></i> ജാഗ്രത! ഒരു അക്ഷരം填റ്റിയാൽ കളി തീരും, അടുത്ത ആൾക്കായി ലിസ്റ്റ് വരും!`;
     welcomeBox.style.display = 'block';
     
     // 💾 ബാക്ക്ഗ്രൗണ്ടിൽ കുട്ടിയുടെ അറ്റൻഡ് കൗണ്ട് (Attempt Count) ഒന്ന് കൂട്ടുന്നു
@@ -387,15 +387,28 @@ function showCertificate() {
     // പുതിയ പോയിന്റ് ഫോർമുല: (Attempts * 50) + Time (തെറ്റിയാൽ ലിസ്റ്റിലേക്ക് പോകുന്നതിനാൽ Mistakes ഇവിടെ ഉണ്ടാകില്ല)
     let finalScore = (parseInt(totalAttempts) * 50) + totalSeconds;
     
+    // ⏰ തീയതിയും സമയവും (AM/PM) എടുക്കുന്നു
     let today = new Date();
-    let dateString = today.getDate() + '/' + (today.getMonth()+1) + '/' + today.getFullYear();
+    let day = today.getDate();
+    let month = today.getMonth() + 1;
+    let year = today.getFullYear();
+    
+    let hours = today.getHours();
+    let minutes = today.getMinutes();
+    let ampm = hours >= 12 ? 'PM' : 'AM';
+    
+    hours = hours % 12;
+    hours = hours ? hours : 12; // 0 മണി എന്നത് 12 AM/PM ആക്കുന്നു
+    minutes = minutes < 10 ? '0' + minutes : minutes; // മിനിറ്റ്സ് 10-ൽ താഴെയാണെങ്കിൽ മുന്നിൽ 0 ചേർക്കും
+    
+    let dateTimeString = `${day}/${month}/${year} - ${hours}:${minutes} ${ampm}`;
     
     document.getElementById("certStudentName").textContent = studentName;
     document.getElementById("certMadrassa").textContent = madrassaObj.name;
     document.getElementById("certMeta").textContent = madrassaObj.metaInfo || "---";
     document.getElementById("certTime").textContent = totalSeconds;
     document.getElementById("certAttempts").textContent = totalAttempts;
-    document.getElementById("certDate").textContent = dateString;
+    document.getElementById("certDate").textContent = dateTimeString;
     document.getElementById("certScore").textContent = finalScore;
     
     document.getElementById("certificateBox").style.display = "block";
